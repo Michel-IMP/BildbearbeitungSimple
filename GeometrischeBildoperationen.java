@@ -116,11 +116,41 @@ public class GeometrischeBildoperationen  extends Bildoperationen
     }
     
     public void dreheLinks( Picture originalbild) {
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         this.op = OP_DreheLinks;
         originalbild.runOp( this );
     }
     
     private PImage dreheLinks( PImage originalbild ){
+        int breiteAlt = originalbild.width;
+        int hoeheAlt  = originalbild.height;
+        
+        int breiteNeu = hoeheAlt;
+        int hoeheNeu = breiteAlt;
+        
+        
+        
+        int[][] pixel = pixelsExplode(originalbild.pixels, breiteAlt, hoeheAlt);
+        int[][] pixelNeu = new int[breiteNeu][hoeheNeu];
+        
+        for(int xNeu=0; xNeu < breiteNeu; xNeu++) {
+            for(int yNeu=0;yNeu < hoeheNeu; yNeu++) {
+                pixelNeu[xNeu][yNeu] = pixel[(breiteAlt-1)-yNeu][xNeu];
+            }
+        }
+        PImage neuesBild = originalbild.copy();
+        neuesBild.pixels= pixelsFlatten(pixelNeu); 
         return originalbild.copy();
     }
     
