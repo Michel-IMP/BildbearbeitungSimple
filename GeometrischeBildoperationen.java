@@ -1,76 +1,77 @@
-import processing.core.PApplet;
-import processing.core.PImage;
 import java.util.Random;
 
 /**
  * Algorithmen zur Änderung der Pixelpositionen eines Pictures
  * z.B. drehen, spiegeln usw.
  *
- * @author Simon Gebert
+ * @author S. Gebert
  * @version 06.2021
  */
-public class GeometrischeBildoperationen  extends Bildoperationen
+public class GeometrischeBildoperationen  implements Bildoperation
 {
-    // ID der aktuell aktiven geometrischen Operation.
-    private int op;
-
+    private int opCount=5; //number of operations available
     // IDs der geometrischen Operationen
     // Jede geometrische Operation erhält eine eindeutige Zahl,
     // um sich diese besser merken zu können, wird die Zahl einer Konstanten 'static final'
     // mit leserlichem Namen 'OP_<NameDerOperation>' zugeordnet.
+    public static final int OP_Nil = 0;
     public static final int OP_SpiegelHorizontal = 1;
     public static final int OP_SpiegelVertikal = 2;
     public static final int OP_DreheLinks = 3;
     public static final int OP_DreheRechts = 4;
     public static final int OP_Drehe180 = 5;
 
+    // ID der aktuell aktiven geometrischen Operation.
+    private int op = OP_Nil;
 
     /**
      * Erstellt eine mit der aktuell aktiven geometrische Operation veränderte Kopie eines Bildes.
      *
-     * @param originalbild Das zu verändernde Bild
+     * @param originalBild Das zu verändernde Bild
      * @return Das geänderte Bild
      */
     @Override
-    public PImage apply(PImage originalbild)
+    public Picture apply(Picture originalBild)
     {
-        // Pro geometrische Operation wird hier eine Zeile benötigt, die die entprechende (private) Methode aufruft
+        // Pro geometrische Operation wird hier eine Zeile benötigt, die die entprechende Operation ausführt.
         switch( this.op ){
-            case OP_SpiegelHorizontal: return spiegelHorizontal(originalbild);
-            case OP_SpiegelVertikal: return spiegelVertikal(originalbild);
-            case OP_DreheLinks: return dreheLinks(originalbild);
-            default: return originalbild.copy();
-        }
+            case OP_SpiegelHorizontal: return spiegelHorizontal(originalBild);
+            case OP_SpiegelVertikal: return spiegelVertikal(originalBild);
+            case OP_DreheLinks: return dreheLinks(originalBild);
+            case OP_DreheRechts:
+            case OP_Drehe180:
+            case OP_Nil:
+            default: return originalBild.copy();
+        }    
     }
-    
+
+    /**
+     * Wählt eine Operation zum Ausführen via apply aus.
+     *
+     * @param op Nummer der auszuführenden Operation.
+     */
+    public void setOperation(int op)
+    {
+        if(op > this.opCount ) return;
+        this.op = op;
+    }
+
     // Anleitung zur Erstellung einer weiteren geometrischen Operation.
-    // 1. Erstelle eine public Methode geometrischeOperation( Picture originalBild ),
-    //    die die aktuell gewählte Operation festlegt und anschließend ausführt. (siehe Beispiele unten)
-    // 2. Erstelle eine private Methode geometrischeOperation( PImage originalBild ),
-    //    diese führt die tatsächliche Operation durch. (siehe Beispiele unten)
-    //    Mit pixelsExplode( ... ) und pixelsFlatten(...) können Bilddaten 
-    //    zwischen eindimensionaler und zweidimensionaler Darstellung umgewandelt werden.
+    // 1. Erstelle eine Methode mit der Signatur "public Picture meineGeometrischeOperation( Picture originalBild )",
+    //    (siehe Beispiele unten)
+    // 2. Passe wenn nötig die Methode apply an (siehe oben)
+    //    und erstelle falls nötig eine neue Konstante "int OP_meineGeometrischeOperation".
     //
-    
-    /** 
-     * spiegeleHorizontal spiegelt das Bild, so dass rechts und links getauscht werden
-     * @param originalbild Ein Bild (Picture), das gespiegelt werden soll
-     */
-    public void spiegelHorizontal(Picture originalbild) {
-        this.op = OP_SpiegelHorizontal; 
-        originalbild.runOp( this );
-    }
 
     /** 
-     * spiegeleHorizontal spiegelt das Bild, so dass rechts und links getauscht werden
-     * @param originalbild Ein Bild (Picture), das gespiegelt werden soll
-     * @return Eine gespiegelte Kopie des Bildes
+     * Spiegelt das Bild, so dass rechts und links getauscht werden
+     * @param originalBild Ein Bild (Picture), das gespiegelt werden soll
      */
-    private PImage spiegelHorizontal(PImage originalbild) {
-        int breite = originalbild.width;
-        int hoehe  = originalbild.height;
+    public Picture spiegelHorizontal(Picture originalBild) {
+        int breite = originalBild.getWidth();
+        int hoehe  = originalBild.getHeight();
 
-        int[][] pixel = pixelsExplode(originalbild.pixels, breite, hoehe);
+        int[][] pixel = originalBild.getPixelsTable();
         int[][] pixelNeu = new int[breite][hoehe];
 
         for(int x=0; x < breite; x++) {
@@ -78,50 +79,62 @@ public class GeometrischeBildoperationen  extends Bildoperationen
                 pixelNeu[x][y] = pixel[(breite-1)-x][y];
             }
         }
-        PImage neuesBild = originalbild.copy();
-        neuesBild.pixels= pixelsFlatten(pixelNeu); 
+        Picture neuesBild = originalBild.copy();
+        neuesBild.setPixelsArray(pixelNeu);
         return neuesBild;
     }
 
     /** 
-     * spiegeleVertikal spiegelt das Bild, so dass oben und unten getauscht werden
-     * @param originalbild Ein Bild (Picture), das gespiegelt werden soll
+     * Spiegelt das Bild, so dass oben und unten getauscht werden
+     * @param originalBild Ein Bild (Picture), das gespiegelt werden soll
      * @return Eine gespiegelte Kopie des Bildes
      */
-    public void spiegelVertikal(Picture originalbild) {
-        this.op = OP_SpiegelVertikal; 
-        originalbild.runOp( this );
-    }
+    public Picture spiegelVertikal(Picture originalBild) {
+        int breite = originalBild.getWidth();
+        int hoehe  = originalBild.getHeight();
 
-    /** 
-     * spiegeleVertikal spiegelt das Bild, so dass oben und unten getauscht werden
-     * @param originalbild Ein Bild (Picture), das gespiegelt werden soll
-     * @return Eine gespiegelte Kopie des Bildes
-     */
-    private PImage spiegelVertikal(PImage originalbild) {
-        int breite = originalbild.width;
-        int hoehe  = originalbild.height;
-
-        int[][] pixel = pixelsExplode(originalbild.pixels, breite, hoehe);
+        int[][] pixel = originalBild.getPixelsTable();
         int[][] pixelNeu = new int[breite][hoehe];
 
         for(int x=0; x < breite; x++) {
             for(int y=0;y < hoehe; y++) {
-                pixelNeu[x][y] = pixel[x][(hoehe-1)-y];
+                pixelNeu[x][y] = pixel[x][(hoehe-1)-y]; //@TODO: Passe diese Zeile so an, dass Vertikal gespiegelt wird.
             }
         }
-        PImage neuesBild = originalbild.copy();
-        neuesBild.pixels= pixelsFlatten(pixelNeu); 
+        Picture neuesBild = originalBild.copy();
+        neuesBild.setPixelsArray(pixelNeu); 
+        return neuesBild;
+    }
+   
+    /**
+     * Dreht ein Bild um 90 Grad gegen den Uhrzeigersinn
+     *
+     * @param originalBild Ein Bild (Picture), das gedreht werden soll
+     * @return Eine um 90 Grad gegen den Uhrzeigersinn gedrehte Kopie des Bildes
+     */
+    public Picture dreheLinks( Picture originalBild) {
+        //@TODO: Kopiere private PImage dreheLinks( PImage originalbild ){
+        int breiteAlt = originalBild.getWidth();
+        int hoeheAlt  = originalBild.getHeight();
+        
+        int breiteNeu = hoeheAlt;
+        int hoeheNeu = breiteAlt;
+        
+        
+        
+        int[][] pixel = originalBild.getPixelsTable();
+        int[][] pixelNeu = new int[breiteNeu][hoeheNeu];
+        
+        for(int x=0; x < breiteNeu; x++) {
+            for(int y=0;y < hoeheNeu; y++) {
+                pixelNeu[x][y] = pixel[(breiteAlt-1)-y][x];
+      
+    }
+ }
+        Picture neuesBild = originalBild.copy();
+        neuesBild.setPixelsArray(pixelNeu); 
         return neuesBild;
     }
     
-    public void dreheLinks( Picture originalbild) {
-        this.op = OP_DreheLinks;
-        originalbild.runOp( this );
-    }
-    
-    private PImage dreheLinks( PImage originalbild ){
-        return originalbild.copy();
-    }
-    
 }
+
