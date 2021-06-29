@@ -105,7 +105,7 @@ public class GeometrischeBildoperationen  implements Bildoperation
         neuesBild.setPixelsArray(pixelNeu); 
         return neuesBild;
     }
-   
+
     /**
      * Dreht ein Bild um 90 Grad gegen den Uhrzeigersinn
      *
@@ -116,25 +116,24 @@ public class GeometrischeBildoperationen  implements Bildoperation
         //@TODO: Kopiere private PImage dreheLinks( PImage originalbild ){
         int breiteAlt = originalBild.getWidth();
         int hoeheAlt  = originalBild.getHeight();
-        
+
         int breiteNeu = hoeheAlt;
         int hoeheNeu = breiteAlt;
-        
-        
+
         
         int[][] pixel = originalBild.getPixelsTable();
         int[][] pixelNeu = new int[breiteNeu][hoeheNeu];
-        
+
         for(int x=0; x < breiteNeu; x++) {
             for(int y=0;y < hoeheNeu; y++) {
                 pixelNeu[x][y] = pixel[(breiteAlt-1)-y][x];
-      
-    }
- }
+
+            }
+        }
         Picture neuesBild = originalBild.copy();
         neuesBild.setPixelsArray(pixelNeu); 
         return neuesBild;
     }
-    
-}
 
+
+}
